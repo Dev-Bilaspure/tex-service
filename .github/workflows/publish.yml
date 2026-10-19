@@ -1,7 +1,9 @@
 name: Publish image
 
 # Push a tag like v0.1.0 to publish that version. Needs, in the repository's settings:
-#   secrets DOCKERHUB_USERNAME and DOCKERHUB_TOKEN (a Docker Hub access token with read & write)
+#   secrets DOCKERHUB_USERNAME and DOCKERHUB_TOKEN (a Docker Hub access token with Read & Write: pushing)
+#   secret DOCKERHUB_DESCRIPTION_TOKEN (optional: a token with Read, Write, Delete, which Docker Hub requires
+#     to edit the repository's description; without it the README isn't copied to Docker Hub)
 #   variable DOCKERHUB_NAMESPACE (optional: the Docker Hub user or organization; default: devbilaspure)
 on:
   push:
@@ -18,6 +20,7 @@ jobs:
     env:
       DOCKERHUB_IMAGE: docker.io/${{ vars.DOCKERHUB_NAMESPACE || 'devbilaspure' }}/tex-service
       GHCR_IMAGE: ghcr.io/dev-bilaspure/tex-service
+      DESCRIPTION_TOKEN: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -71,11 +74,13 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Kept apart from the push token: editing a description needs the Delete scope, pushing doesn't.
       - name: Docker Hub description from the README
+        if: env.DESCRIPTION_TOKEN != ''
         uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5.0.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ env.DESCRIPTION_TOKEN }}
           repository: ${{ vars.DOCKERHUB_NAMESPACE || 'devbilaspure' }}/tex-service
           short-description: TeX Live 2026 as an HTTP compile service (latexmk, SyncTeX, texcount, poppler)
           readme-filepath: ./README.md
