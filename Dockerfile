@@ -5,7 +5,7 @@
 
 # Node, copied into the TeX Live image below. The service has no dependencies: Node runs its TypeScript
 # sources directly (type stripping).
-FROM node:24-bookworm-slim AS node
+FROM node:26-bookworm-slim AS node
 
 # TeX Live 2026, full scheme. Pinned by digest: update it deliberately, then rebuild and run the tests.
 FROM texlive/texlive:latest-full@sha256:0f4884ca7d287f47ab466d2dd405d4c901c576585363f628863a7ca7eea21301
