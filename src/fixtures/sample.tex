@@ -1,0 +1,15 @@
+% A small document for the tests: a title, a list (for SyncTeX lookups), some words (for texcount).
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2cm]{geometry}
+\usepackage{hyperref}
+\begin{document}
+\section*{Release notes}
+This release makes builds faster and easier to follow.
+\begin{itemize}
+  \item Incremental builds reuse the previous build's auxiliary files.
+  \item Errors point at the file and the line that caused them.
+  \item SyncTeX maps every line of the source to the page it lands on.
+\end{itemize}
+See \url{https://tug.org/texlive/} for the distribution.
+\end{document}

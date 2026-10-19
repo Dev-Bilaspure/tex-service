@@ -1,0 +1,33 @@
+# Run tex-service on this machine: docker compose up -d   (the first build downloads TeX Live, a few GB)
+# Then: curl http://127.0.0.1:4380/health
+
+services:
+  tex:
+    build: .
+    image: tex-service:local
+    # Loopback only: the service runs TeX on whatever it's sent, so only this machine may reach it…
+    ports:
+      - "127.0.0.1:${TEX_SERVICE_PORT:-4380}:4380"
+    environment:
+      # …which is why it may run without a token here. Anywhere else, set TEX_SERVICE_TOKEN instead.
+      TEX_SERVICE_ALLOW_UNAUTHENTICATED: ${TEX_SERVICE_ALLOW_UNAUTHENTICATED:-1}
+      TEX_SERVICE_TOKEN: ${TEX_SERVICE_TOKEN:-}
+      TEX_SERVICE_ALLOW_SHELL_ESCAPE: ${TEX_SERVICE_ALLOW_SHELL_ESCAPE:-0}
+      TEX_SERVICE_CONCURRENCY: ${TEX_SERVICE_CONCURRENCY:-}
+    volumes:
+      - tex-data:/data
+    tmpfs:
+      - /tmp
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 512
+    mem_limit: ${TEX_SERVICE_MEMORY:-4g}
+    # Reaps the processes TeX starts (latexmk → xelatex → biber) and passes signals on.
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+
+volumes:
+  tex-data:

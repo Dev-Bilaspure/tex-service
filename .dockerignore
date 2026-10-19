@@ -1,0 +1,8 @@
+.git
+.github
+node_modules
+dist
+tex-service-data
+*.md
+!README.md
+!THIRD_PARTY_NOTICES.md

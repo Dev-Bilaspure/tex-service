@@ -21,7 +21,7 @@ const hasTex = (() => {
 })();
 const needsTex = { skip: !hasTex && "TeX isn't installed" };
 
-const classic = readFileSync(new URL("../../tailor-latex/src/fixtures/classic.tex", import.meta.url), "utf8");
+const sample = readFileSync(new URL("./fixtures/sample.tex", import.meta.url), "utf8");
 
 let dataDir = "";
 let svc: TexService;
@@ -103,7 +103,9 @@ test("too-large requests are refused", async () => {
 
 test("an unreachable service is explained", async () => {
   const gone = createTexServiceClient({ url: "http://127.0.0.1:9" });
-  await assert.rejects(gone.info(), (e: TexServiceError) => e.code === "unreachable" && /docker compose up/.test(e.message));
+  await assert.rejects(gone.info(), (e: TexServiceError) => e.code === "unreachable" && /Is it running\?/.test(e.message));
+  const hinted = createTexServiceClient({ url: "http://127.0.0.1:9", unreachableHint: "Start it with docker compose up -d." });
+  await assert.rejects(hinted.info(), /Start it with docker compose up -d\./);
 });
 
 test("sync uploads only what changed and deletes what's gone", async () => {
@@ -126,26 +128,26 @@ test("sync uploads only what changed and deletes what's gone", async () => {
 });
 
 test("a build returns the log, PDF and SyncTeX; SyncTeX and PDF queries work", needsTex, async () => {
-  await client.sync("p-classic", memoryEntries({ "main.tex": classic }));
-  const r = await client.compile("p-classic", { main: "main.tex", engine: "pdflatex" });
+  await client.sync("p-sample", memoryEntries({ "main.tex": sample }));
+  const r = await client.compile("p-sample", { main: "main.tex", engine: "pdflatex" });
   assert.equal(r.code, 0, r.stdout);
   assert.ok(r.pdf && Buffer.from(r.pdf, "base64").subarray(0, 5).toString() === "%PDF-");
   assert.match(r.log ?? "", /Output written on main\.pdf/);
-  assert.ok(r.root.endsWith("/projects/p-classic"));
+  assert.ok(r.root.endsWith("/projects/p-sample"));
   const stx = gunzipSync(Buffer.from(r.synctex!, "base64")).toString();
   assert.match(stx, new RegExp(`Input:1:${r.root}/\\./main\\.tex`));
 
   // Unchanged sources: latexmk has nothing to do and writes no new PDF.
-  const again = await client.compile("p-classic", { main: "main.tex", engine: "pdflatex" });
+  const again = await client.compile("p-sample", { main: "main.tex", engine: "pdflatex" });
   assert.equal(again.code, 0);
   assert.equal(again.pdf, null);
   // Forced: it really runs TeX.
-  assert.ok((await client.compile("p-classic", { main: "main.tex", engine: "pdflatex", force: true })).pdf);
+  assert.ok((await client.compile("p-sample", { main: "main.tex", engine: "pdflatex", force: true })).pdf);
 
-  const line = classic.split("\n").findIndex((l) => l.includes("\\item")) + 1;
-  const view = await client.synctex({ project: "p-classic", synctex: r.synctex!, view: { file: "main.tex", line } });
+  const line = sample.split("\n").findIndex((l) => l.includes("\\item")) + 1;
+  const view = await client.synctex({ project: "p-sample", synctex: r.synctex!, view: { file: "main.tex", line } });
   assert.match(view.stdout, /Page:1/);
-  const edit = await client.synctex({ project: "p-classic", synctex: r.synctex!, edit: { page: 1, x: 100, y: 200 } });
+  const edit = await client.synctex({ project: "p-sample", synctex: r.synctex!, edit: { page: 1, x: 100, y: 200 } });
   assert.match(edit.stdout, new RegExp(`Input:${view.root}\\./main\\.tex`));
 
   const pdf = Buffer.from(r.pdf!, "base64");
@@ -160,7 +162,7 @@ test("a build returns the log, PDF and SyncTeX; SyncTeX and PDF queries work", n
   assert.notEqual(none.text?.code, 0, "no page 2");
   await assert.rejects(client.inspectPdf(Buffer.from("not a pdf"), { text: true }), /isn't a PDF/);
 
-  const wc = await client.texcount("p-classic", "main.tex");
+  const wc = await client.texcount("p-sample", "main.tex");
   assert.match(wc.stdout, /Words in text: \d+/);
 });
 

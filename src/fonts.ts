@@ -1,4 +1,4 @@
-// Commercial fonts a resume may ask for by name that a Linux TeX Live doesn't have, and their free stand-ins.
+// Commercial fonts a document may ask for by name that a Linux TeX Live doesn't have, and their free stand-ins.
 
 /** Free fonts with the same character widths as common commercial ones: same line breaks, same page count. */
 export const METRIC_COMPATIBLE: Record<string, string> = {

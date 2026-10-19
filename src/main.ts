@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // tex-service: the compile service. Configured by the environment (see config.ts and the README).
 import { mkdirSync } from "node:fs";
 import { configFromEnv } from "./config.ts";

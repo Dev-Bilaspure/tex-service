@@ -1,43 +1,62 @@
 {
-  "name": "@resume-studio/tex-service",
+  "name": "tex-service",
   "version": "0.1.0",
-  "private": true,
+  "description": "TeX Live as an HTTP compile service: latexmk, SyncTeX, texcount and poppler in one container, with a TypeScript client.",
+  "license": "MIT",
+  "author": "Dev Bilaspure",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dev-Bilaspure/tex-service.git"
+  },
+  "homepage": "https://github.com/Dev-Bilaspure/tex-service#readme",
+  "bugs": "https://github.com/Dev-Bilaspure/tex-service/issues",
+  "keywords": [
+    "latex",
+    "tex",
+    "texlive",
+    "latexmk",
+    "synctex",
+    "pdf",
+    "compiler",
+    "docker"
+  ],
   "type": "module",
-  "description": "The TeX toolchain (TeX Live, latexmk, SyncTeX, poppler) as a small HTTP service, and its client.",
+  "engines": {
+    "node": ">=24"
+  },
   "exports": {
-    ".": "./src/index.ts",
-    "./server": "./src/server.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    }
   },
   "bin": {
-    "tex-service": "./bin/tex-service.js"
+    "tex-service": "./dist/main.js"
   },
   "files": [
     "dist",
-    "README.md"
+    "!dist/**/*.test.*",
+    "!dist/fixtures",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
   ],
-  "publishConfig": {
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "./server": {
-        "types": "./dist/server.d.ts",
-        "default": "./dist/server.js"
-      }
-    },
-    "bin": {
-      "tex-service": "./dist/main.js"
-    }
-  },
   "scripts": {
     "start": "node src/main.ts",
     "typecheck": "tsc -p .",
-    "test": "node --experimental-strip-types --no-warnings --test 'src/**/*.test.ts'",
-    "build": "tsc -p tsconfig.build.json"
+    "test": "node --test 'src/**/*.test.ts'",
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "tsc -p tsconfig.build.json",
+    "docker:build": "docker build -t tex-service .",
+    "docker:test": "docker build -t tex-service . && docker run --rm --entrypoint node tex-service --test 'src/**/*.test.ts'"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43",
+    "@types/node": "^24.3.0",
     "typescript": "^5.9.3"
-  }
+  },
+  "packageManager": "pnpm@10.28.2"
 }

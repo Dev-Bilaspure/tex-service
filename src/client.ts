@@ -34,6 +34,8 @@ export interface TexServiceClientOptions {
   /** e.g. http://127.0.0.1:4380 */
   url: string;
   token?: string;
+  /** Appended to "can't reach the service" errors, e.g. how your users start it. */
+  unreachableHint?: string;
   /** For tests. */
   fetch?: typeof fetch;
 }
@@ -86,7 +88,7 @@ export function createTexServiceClient(opts: TexServiceClientOptions): TexServic
     } catch (e) {
       if (timeout.aborted) throw new TexServiceError("timeout", `The compile service at ${base} didn't answer within ${Math.round(init.timeoutMs / 1000)}s`);
       if (init.signal?.aborted) throw e;
-      throw new TexServiceError("unreachable", `Can't reach the compile service at ${base} (${describe(e)}). Start it with \`docker compose up -d\` in the repository folder.`);
+      throw new TexServiceError("unreachable", `Can't reach the compile service at ${base} (${describe(e)}). ${opts.unreachableHint ?? "Is it running?"}`);
     }
     const text = await res.text();
     if (!res.ok) {

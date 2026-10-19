@@ -1,5 +1,5 @@
-// How a resume is built: the one latexmk command line, shared by local builds (the editor running TeX on
-// this machine) and the compile service, so a document builds the same way in both.
+// How a document is built: the one latexmk command line. Exported so a client that also builds locally (on a
+// machine with TeX installed) can build exactly the way the service does.
 
 export type TexEngine = "pdflatex" | "xelatex" | "lualatex" | "latex";
 export const TEX_ENGINES: readonly TexEngine[] = ["pdflatex", "xelatex", "lualatex", "latex"];
@@ -14,7 +14,7 @@ export const PROJECT_RC_FILES = ["latexmkrc", ".latexmkrc"] as const;
  * builds are the same on every machine). They match what Overleaf sets up, so projects that build there
  * build here.
  */
-export const BUILTIN_LATEXMKRC = String.raw`# Written by Resume Studio; loaded for every build.
+export const BUILTIN_LATEXMKRC = String.raw`# Written by tex-service; loaded for every build.
 
 # latex (DVI) engine: DVI → PDF with dvipdfmx, which keeps SyncTeX positions and needs no Ghostscript.
 $dvipdf = 'dvipdfmx %O -o %D %S';

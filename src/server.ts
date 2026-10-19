@@ -1,5 +1,5 @@
 // The compile service: TeX Live, latexmk, SyncTeX, texcount and poppler behind a small HTTP API (see
-// protocol.ts), so the editor and the tailoring engine can build resumes on any OS without installing
+// protocol.ts), so an app can build LaTeX documents on any OS without installing
 // TeX. It's meant to run in its container next to the app, on loopback; the token is for anything else.
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -316,7 +316,7 @@ export async function createTexService(config: TexServiceConfig): Promise<TexSer
     await rm(statePath(id), { force: true });
   }
 
-  // Projects nobody has built for a while (a resume deleted, a tailoring session finished).
+  // Projects nobody has built for a while (the client moved on, or deleted its document).
   async function collectGarbage() {
     const cutoff = Date.now() - config.projectTtlMs;
     for (const name of await readdir(projectsDir).catch(() => [] as string[])) {

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.tsbuildinfo
+# The service run outside Docker keeps its projects here.
+tex-service-data/
+.DS_Store
+.env
+.env.*
