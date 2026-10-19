@@ -1,0 +1,22 @@
+# Pull requests for updates, never applied on their own: review them, and for the TeX Live base image check
+# that documents still build the same before merging.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev-dependencies:
+        dependency-type: development
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly
