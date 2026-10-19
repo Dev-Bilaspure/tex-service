@@ -2,7 +2,7 @@ name: Publish image
 
 # Push a tag like v0.1.0 to publish that version. Needs, in the repository's settings:
 #   secrets DOCKERHUB_USERNAME and DOCKERHUB_TOKEN (a Docker Hub access token with read & write)
-#   variable DOCKERHUB_NAMESPACE (optional: the Docker Hub user or organization; default: DOCKERHUB_USERNAME)
+#   variable DOCKERHUB_NAMESPACE (optional: the Docker Hub user or organization; default: devbilaspure)
 on:
   push:
     tags: ["v*.*.*"]
@@ -16,7 +16,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      DOCKERHUB_IMAGE: docker.io/${{ vars.DOCKERHUB_NAMESPACE || secrets.DOCKERHUB_USERNAME }}/tex-service
+      DOCKERHUB_IMAGE: docker.io/${{ vars.DOCKERHUB_NAMESPACE || 'devbilaspure' }}/tex-service
       GHCR_IMAGE: ghcr.io/dev-bilaspure/tex-service
     steps:
       - uses: actions/checkout@v4
@@ -76,6 +76,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ vars.DOCKERHUB_NAMESPACE || secrets.DOCKERHUB_USERNAME }}/tex-service
+          repository: ${{ vars.DOCKERHUB_NAMESPACE || 'devbilaspure' }}/tex-service
           short-description: TeX Live 2026 as an HTTP compile service (latexmk, SyncTeX, texcount, poppler)
           readme-filepath: ./README.md

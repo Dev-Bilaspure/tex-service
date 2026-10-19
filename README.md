@@ -25,7 +25,7 @@ the PDF, the log and SyncTeX data. Builds are incremental and the same on every 
 docker run -d --name tex -p 127.0.0.1:4380:4380 \
   -e TEX_SERVICE_ALLOW_UNAUTHENTICATED=1 \
   -v tex-data:/data \
-  ghcr.io/dev-bilaspure/tex-service:0.1
+  devbilaspure/tex-service:0.1
 
 curl http://127.0.0.1:4380/health        # {"ok":true}
 curl http://127.0.0.1:4380/v1/info       # TeX Live version, engines, fonts, limits
@@ -36,7 +36,7 @@ Anywhere others can reach it, use a token instead:
 
 ```sh
 docker run -d -p 4380:4380 -e TEX_SERVICE_TOKEN="$(openssl rand -hex 32)" -v tex-data:/data \
-  ghcr.io/dev-bilaspure/tex-service:0.1
+  devbilaspure/tex-service:0.1
 ```
 
 Or with Docker Compose, using the hardened settings in [docker-compose.yml](docker-compose.yml)
@@ -163,8 +163,9 @@ must not see each other's files.
 | `0.1`, `0` | the latest release in that series |
 | `latest` | the latest release |
 
-Images are published to Docker Hub and GitHub Container Registry
-(`ghcr.io/dev-bilaspure/tex-service`) for `linux/amd64` and `linux/arm64`, with provenance and an SBOM.
+Images are published to [Docker Hub](https://hub.docker.com/r/devbilaspure/tex-service)
+(`devbilaspure/tex-service`) and GitHub Container Registry (`ghcr.io/dev-bilaspure/tex-service`), for
+`linux/amd64` and `linux/arm64`, with provenance and an SBOM.
 
 ## Development
 
