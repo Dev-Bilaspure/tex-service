@@ -55,8 +55,8 @@
     "docker:test": "docker build -t tex-service . && docker run --rm --entrypoint node tex-service --test 'src/**/*.test.ts'"
   },
   "devDependencies": {
-    "@types/node": "^24.3.0",
-    "typescript": "^5.9.3"
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
   },
   "packageManager": "pnpm@10.28.2"
 }
