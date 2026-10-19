@@ -195,6 +195,9 @@ export async function createTexService(config: TexServiceConfig): Promise<TexSer
   async function compile(id: string, body: CompileRequest, signal: AbortSignal): Promise<CompileResponse> {
     if (!body || typeof body.main !== "string" || !isSafeRelativePath(body.main)) throw bad("`main` must be a relative path in the project");
     if (!TEX_ENGINES.includes(body.engine)) throw bad(`\`engine\` must be one of ${TEX_ENGINES.join(", ")}`);
+    if (body.trusted && !config.allowShellEscape) {
+      throw new HttpError(403, "forbidden", "Shell escape is disabled on this service (it lets a document run any command). The operator can enable it with TEX_SERVICE_ALLOW_SHELL_ESCAPE=1.");
+    }
     const state = await loadState(id);
     if (!(body.main in state.files)) throw bad(`The project has no file "${body.main}": sync it first`);
     const root = projectDir(id);
@@ -476,5 +479,6 @@ async function probe(config: TexServiceConfig): Promise<InfoResponse> {
     poppler: { missing: POPPLER.filter((t) => !findTool(t)) },
     fontSubstitutes,
     limits: { maxBodyBytes: config.maxBodyBytes, maxCompileMs: config.maxCompileMs, concurrency: config.concurrency },
+    security: { tokenRequired: !!config.token, shellEscape: config.allowShellEscape },
   };
 }

@@ -40,6 +40,8 @@ export interface InfoResponse {
   /** Fonts this image doesn't have, and the metric-compatible stand-in a build uses instead. */
   fontSubstitutes: Record<string, string>;
   limits: { maxBodyBytes: number; maxCompileMs: number; concurrency: number };
+  /** Whether clients must send a token, and whether `trusted` builds (full shell escape) are allowed. */
+  security: { tokenRequired: boolean; shellEscape: boolean };
 }
 
 export interface UploadRequest {
@@ -60,6 +62,7 @@ export interface CompileRequest {
   main: string;
   engine: TexEngine;
   force?: boolean;
+  /** Full shell escape (\write18) and the project's latexmkrc: only if the service allows it (403 otherwise). */
   trusted?: boolean;
   haltOnError?: boolean;
   /** Capped by the service's own limit. */

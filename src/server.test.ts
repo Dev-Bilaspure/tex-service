@@ -38,6 +38,8 @@ async function start(extra: Partial<TexServiceConfig> = {}) {
     maxBodyBytes: 4 * 1024 * 1024,
     projectTtlMs: 60_000,
     logRequests: false,
+    allowUnauthenticated: false,
+    allowShellEscape: false,
     ...extra,
   };
   const s = await createTexService(config);
@@ -197,4 +199,25 @@ test("a build that never ends is stopped at its time limit", needsTex, async () 
   assert.ok(Date.now() - t0 < 15_000, "killed, not left running");
   const ps = execFileSync("ps", ["-axo", "command"]).toString();
   assert.ok(!/pdflatex.*p-loop|projects\/p-loop/.test(ps), "no TeX process left behind");
+});
+
+test("shell escape is refused unless the operator allows it", needsTex, async () => {
+  const doc = "\\documentclass{article}\n\\begin{document}\n\\immediate\\write18{echo ran > ran.txt}Hi\n\\end{document}\n";
+  await client.sync("p-shell", memoryEntries({ "main.tex": doc }));
+  await assert.rejects(client.compile("p-shell", { main: "main.tex", engine: "pdflatex", trusted: true }), (e: TexServiceError) => e.status === 403 && /TEX_SERVICE_ALLOW_SHELL_ESCAPE/.test(e.message));
+  // An ordinary build of the same document can't run the command (restricted shell escape).
+  await client.compile("p-shell", { main: "main.tex", engine: "pdflatex" });
+  assert.ok(!existsSync(join(dataDir, "projects/p-shell/ran.txt")), "the command didn't run");
+
+  const { s, config, url } = await start({ allowShellEscape: true });
+  try {
+    const c = createTexServiceClient({ url });
+    assert.equal((await c.info()).security.shellEscape, true);
+    await c.sync("p-shell", memoryEntries({ "main.tex": doc }));
+    assert.equal((await c.compile("p-shell", { main: "main.tex", engine: "pdflatex", trusted: true })).code, 0);
+    assert.ok(existsSync(join(config.dataDir, "projects/p-shell/ran.txt")), "allowed: the command ran");
+  } finally {
+    await s.close(0);
+    rmSync(config.dataDir, { recursive: true, force: true });
+  }
 });

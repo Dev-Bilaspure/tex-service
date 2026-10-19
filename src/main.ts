@@ -30,7 +30,8 @@ service.server.listen(config.port, config.host, () => {
   const subs = Object.entries(fontSubstitutes).map(([a, b]) => `${a}→${b}`);
   console.log(
     `[tex-service] listening on http://${config.host}:${config.port} · ${tex.version ?? "TeX not found"} · ${config.concurrency} at a time` +
-      (config.token ? " · token required" : "") +
+      (config.token ? " · token required" : " · no token") +
+      (config.allowShellEscape ? " · shell escape ALLOWED" : "") +
       (subs.length ? ` · font stand-ins: ${subs.join(", ")}` : ""),
   );
 });
