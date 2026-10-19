@@ -1,0 +1,81 @@
+name: Publish image
+
+# Push a tag like v0.1.0 to publish that version. Needs, in the repository's settings:
+#   secrets DOCKERHUB_USERNAME and DOCKERHUB_TOKEN (a Docker Hub access token with read & write)
+#   variable DOCKERHUB_NAMESPACE (optional: the Docker Hub user or organization; default: DOCKERHUB_USERNAME)
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_IMAGE: docker.io/${{ vars.DOCKERHUB_NAMESPACE || secrets.DOCKERHUB_USERNAME }}/tex-service
+      GHCR_IMAGE: ghcr.io/dev-bilaspure/tex-service
+    steps:
+      - uses: actions/checkout@v4
+
+      # Never publish what doesn't pass: build for this machine and run the tests inside the image first.
+      - uses: docker/setup-buildx-action@v3
+      - name: Test the image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: tex-service:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - run: docker run --rm --entrypoint node tex-service:test --test 'src/**/*.test.ts'
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKERHUB_IMAGE }}
+            ${{ env.GHCR_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+          # "latest" follows the newest release tag (the action's default for semver tags).
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            REVISION=${{ github.sha }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Docker Hub description from the README
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ vars.DOCKERHUB_NAMESPACE || secrets.DOCKERHUB_USERNAME }}/tex-service
+          short-description: TeX Live 2026 as an HTTP compile service (latexmk, SyncTeX, texcount, poppler)
+          readme-filepath: ./README.md
