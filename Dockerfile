@@ -8,7 +8,7 @@
 FROM node:24-bookworm-slim AS node
 
 # TeX Live 2026, full scheme. Pinned by digest: update it deliberately, then rebuild and run the tests.
-FROM texlive/texlive:latest-full@sha256:0f4884ca7d287f47ab466d2dd405d4c901c576585363f628863a7ca7eea21301
+FROM texlive/texlive:latest-full@sha256:540d736c78e2803cdd7b6a196bd21339c30185948db55e04e75a415959102ca8
 ARG VERSION=dev
 ARG REVISION=unknown
 LABEL org.opencontainers.image.title="tex-service" \
